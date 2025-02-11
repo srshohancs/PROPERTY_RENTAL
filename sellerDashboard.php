@@ -399,140 +399,6 @@
                     <hr class="">
 
                     <div class="p-5 bg-light">
-
-                        <?php  
-                            $activeEmail = $_SESSION['email'];
-                            $sql = "SELECT * FROM transactions WHERE user_email='$activeEmail' AND status=1";
-                            $query = mysqli_query($db, $sql);
-
-                            while ( $row = mysqli_fetch_assoc( $query ) ) {
-                                $id               = $row['id'];
-                                $transaction_id   = $row['transaction_id'];
-                                $user_email       = $row['user_email'];
-                                $package_name     = $row['package_name'];
-                                $price            = $row['price'];
-                                $transaction_date = $row['transaction_date'];
-                                $renewal_date     = $row['renewal_date'];
-                                $status           = $row['status'];
-
-                                $pacsql = "SELECT * FROM package WHERE name='$package_name' AND status=1";
-                                $pacquery = mysqli_query($db, $pacsql);
-
-                                while ( $row = mysqli_fetch_assoc( $pacquery ) ) {
-                                    $pacid              = $row['id'];
-                                    $name               = $row['name'];
-                                    $details            = $row['details'];
-                                    $basic_price        = $row['basic_price'];
-                                    $discount_price     = $row['discount_price'];
-                                    $dis_percent        = $row['dis_percent'];
-                                    $renew              = $row['renew'];
-                                    $rent_flat          = $row['rent_flat'];
-                                    $rent_store         = $row['rent_store'];
-                                    $rent_hotel         = $row['rent_hotel'];
-                                    $buy_flat           = $row['buy_flat'];
-                                    $buy_store          = $row['buy_store'];
-                                    $buy_hotel          = $row['buy_hotel'];
-                                    $buy_property       = $row['buy_property'];
-                                    $status             = $row['status'];
-                                    $join_date          = $row['join_date'];
-
-                                    // Package Id 1 means Starter
-                                    if ( $pacid == 1 ) {
-                                        
-                                         echo $name;
-
-                                        // Package db some data store as a variable
-                                        $rentflat      = $rent_flat;
-                                        $rentstore     = $rent_store;
-                                        $renthotel     = $rent_hotel;
-                                        $buyflat       = $buy_flat;
-                                        $buystore      = $buy_store;
-                                        $buyhotel      = $buy_hotel;
-                                        $buyproperty   = $buy_property;
-
-                                        $margeSql = "SELECT cat_id AS id, name, 'Rent' AS category_type FROM rent_category WHERE status = 1
-                                            UNION
-                                            SELECT id, name, 'Buy' AS category_type FROM buy_category WHERE status = 1 
-                                            ORDER BY category_type, name";
-                                        $margeQuery = mysqli_query($db, $margeSql);
-
-                                        while ($row = mysqli_fetch_assoc($margeQuery)) {
-                                            $id = $row['id'];
-                                            $name = $row['name'];
-                                            $type = $row['category_type'];
-
-                                            
-                                        }
-                                        echo "<br>Check<br>";
-                                        echo "rent ". $name . $rentflat . "<br>";
-                                        echo "rent ". $name . $renthotel . "<br>";
-                                        echo "rent ". $name . $rentstore . "<br>";
-                                        echo "buy " . $name . $buyflat. "<br>";
-                                        echo "buy " . $name . $buystore. "<br>";
-                                        echo "buy " . $name . $buyhotel. "<br>";
-                                        echo "buy " . $name . $buyproperty. "<br>";
-
-
-                                        // 
-                                        $sesEmail = $_SESSION['email'];
-                                        $sql = "SELECT * FROM rent_subcategory WHERE ow_email='$sesEmail' ORDER BY sub_id DESC";
-                                        $query = mysqli_query($db, $sql);
-                                        $count = mysqli_num_rows($query);
-                                        echo $count;
-
-                                        $displayedCategories = []; 
-
-                                        while ($row = mysqli_fetch_assoc($query)) {
-                                            $is_parent = $row['is_parent'];
-
-                                            // rent
-                                            $rentcategorySql = "SELECT * FROM rent_category WHERE cat_id = '$is_parent' AND status = 1 ORDER BY name ASC";
-                                            $rentcategoryQuery = mysqli_query($db, $rentcategorySql);
-
-                                            while ($category = mysqli_fetch_assoc($rentcategoryQuery)) {
-                                                $cat_id = $category['cat_id'];
-                                                $cat_name = $category['name'];
-
-                                                if (!in_array($cat_id, $displayedCategories)) {
-                                                    $valId = $cat_id + 1;
-                                                    echo $valId . $cat_name . " -- ";
-                                                    $displayedCategories[] = $cat_id; // Mark this category as displayed
-
-                                                    if ( $renthotel >= $valId ) {
-                                                        echo $renthotel;
-                                                    }
-                                                }
-                                            }
-
-
-                                        }
-                                        /**/
-
-                                        
-
-                                    }
-
-                                    // Package Id 2 means Standard
-                                    else if ( $pacid == 2  ) {
-                                        echo $name;
-                                    }
-
-                                    // Package Id 2 means Advance
-                                    else if ( $pacid == 3 ) {
-                                       echo"$name";
-
-
-
-
-
-                                    }
-
-
-
-                                    
-                                }
-                            }
-                        ?>
                       <!-- START : FORM -->
                       <form action="sellerDashboard.php?do=Store" method="POST" enctype="multipart/form-data">
                         <div class="row">
@@ -600,7 +466,7 @@
                               <div class="col-lg-6">
                                 <div class="mb-3">
                                   <label>Category Name</label>
-                                  <select class="form-select" name="is_parent">
+                                  <select class="form-select" name="is_parent" required>
                                     <option>Please Select the Category</option>
                                     <?php
                                     $catSql = "SELECT * FROM rent_category WHERE status=1";
@@ -902,143 +768,122 @@
 
                   else if ($do == "Store") {
                     if (isset($_POST['addSubCat'])) {
-                      $subname    = mysqli_real_escape_string($db, $_POST['subname']);
-                      $ow_name    = mysqli_real_escape_string($db, $_POST['ow_name']);
-                      $ow_email     = mysqli_real_escape_string($db, $_POST['ow_email']);
-                      $ow_phone     = mysqli_real_escape_string($db, $_POST['ow_phone']);
-                      $division   = mysqli_real_escape_string($db, $_POST['division']);
-                      $district     = mysqli_real_escape_string($db, $_POST['district']);
-                      $location     = mysqli_real_escape_string($db, $_POST['location']);
-                      $price      = mysqli_real_escape_string($db, $_POST['price']);
-                      $bed      = mysqli_real_escape_string($db, $_POST['bed']);
-                      $kitchen    = mysqli_real_escape_string($db, $_POST['kitchen']);
-                      $drawing    = mysqli_real_escape_string($db, $_POST['drawing']);
-                      $dinning    = mysqli_real_escape_string($db, $_POST['dinning']);
-                      $balcony    = mysqli_real_escape_string($db, $_POST['balcony']);
-                      $garage     = mysqli_real_escape_string($db, $_POST['garage']);
-                      $washroom     = mysqli_real_escape_string($db, $_POST['washroom']);
-                      $totalRoom    = mysqli_real_escape_string($db, $_POST['totalRoom']);
-                      $areaSize     = mysqli_real_escape_string($db, $_POST['areaSize']);
-                      $floor      = mysqli_real_escape_string($db, $_POST['floor']);
-                      $rank       = mysqli_real_escape_string($db, $_POST['rank']);
-                      $decoration   = mysqli_real_escape_string($db, $_POST['decoration']);
-                      $desk       = mysqli_real_escape_string($db, $_POST['desk']);
-                      $wifi       = mysqli_real_escape_string($db, $_POST['wifi']);
-                      $hottub     = mysqli_real_escape_string($db, $_POST['hottub']);
-                      $currency     = mysqli_real_escape_string($db, $_POST['currency']);
-                      $breakfast    = mysqli_real_escape_string($db, $_POST['breakfast']);
-                      $restourant   = mysqli_real_escape_string($db, $_POST['restourant']);
-                      $ac       = mysqli_real_escape_string($db, $_POST['ac']);
-                      $pool       = mysqli_real_escape_string($db, $_POST['pool']);
-                      $park       = mysqli_real_escape_string($db, $_POST['park']);
-                      $gym      = mysqli_real_escape_string($db, $_POST['gym']);
-                      $luggage    = mysqli_real_escape_string($db, $_POST['luggage']);
-                      $sdesc      = mysqli_real_escape_string($db, $_POST['sdesc']);
-                      $ldesc      = mysqli_real_escape_string($db, $_POST['ldesc']);
-                      $map      = mysqli_real_escape_string($db, $_POST['map']);
-                      $availabe   = $_POST['availabe'];
-                      $is_parent    = mysqli_real_escape_string($db, $_POST['is_parent']);
-                      $status     = mysqli_real_escape_string($db, $_POST['status']);
-                      $imgOwn     = mysqli_real_escape_string($db, $_POST['ow_image']);
+                        // START: Code for actual check the condition of package limit
+                        $activeEmail = $_SESSION['email'];
+                        // Transaction
+                        $sql = "SELECT * FROM transactions WHERE user_email='$activeEmail' AND status=1";
+                        $query = mysqli_query($db, $sql);
 
-                      // For Image One
-                      $img_one    = mysqli_real_escape_string($db, $_FILES['img_one']['name']);
-                      $tmpImgOne    = $_FILES['img_one']['tmp_name'];
+                        while ( $row = mysqli_fetch_assoc( $query ) ) {
+                            $id               = $row['id'];
+                            $transaction_id   = $row['transaction_id'];
+                            $user_email       = $row['user_email'];
+                            $package_name     = $row['package_name'];
+                            $price            = $row['price'];
+                            $transaction_date = $row['transaction_date'];
+                            $renewal_date     = $row['renewal_date'];
+                            $status           = $row['status'];
 
-                      if (!empty($img_one)) {
-                        $img1 = rand(0, 999999) . "_" . $img_one;
-                        move_uploaded_file($tmpImgOne, 'admin/assets/images/subcategory/' . $img1);
-                      } else {
-                        $img1 = '';
-                      }
+                            // Package
+                            $pacsql = "SELECT * FROM package WHERE name='$package_name' AND status=1";
+                            $pacquery = mysqli_query($db, $pacsql);
 
-                      // For Image Two
-                      $img_two    = mysqli_real_escape_string($db, $_FILES['img_two']['name']);
-                      $tmpImgTwo    = $_FILES['img_two']['tmp_name'];
+                            while ( $row = mysqli_fetch_assoc( $pacquery ) ) {
+                                $pacid              = $row['id'];
+                                $name               = $row['name'];
+                                $details            = $row['details'];
+                                $basic_price        = $row['basic_price'];
+                                $discount_price     = $row['discount_price'];
+                                $dis_percent        = $row['dis_percent'];
+                                $renew              = $row['renew'];
+                                $rent_flat          = $row['rent_flat'];
+                                $rent_store         = $row['rent_store'];
+                                $rent_hotel         = $row['rent_hotel'];
+                                $buy_flat           = $row['buy_flat'];
+                                $buy_store          = $row['buy_store'];
+                                $buy_hotel          = $row['buy_hotel'];
+                                $buy_property       = $row['buy_property'];
+                                $status             = $row['status'];
+                                $join_date          = $row['join_date'];
 
-                      if (!empty($tmpImgTwo)) {
-                        $img2 = rand(0, 999999) . "_" . $img_two;
-                        move_uploaded_file($tmpImgTwo, 'admin/assets/images/subcategory/' . $img2);
-                      } else {
-                        $img2 = '';
-                      }
+                                // Start: Rent Sub Category
+                                $childSql = "SELECT * FROM rent_subcategory WHERE ow_email ='$activeEmail' ORDER BY subcat_name ASC";
+                                $childQuery = mysqli_query($db, $childSql);
+                                $childSqlCount = mysqli_num_rows($childQuery);
+                                echo "Row count". $childSqlCount;
+                                while ($row = mysqli_fetch_assoc($childQuery)) {
+                                  $sub_id       = $row['sub_id'];
+                                  $is_parent    = $row['is_parent'];
+                                  $subcat_name  = $row['subcat_name'];
+                                  $slug         = $row['slug'];
+                                  $ow_name      = $row['ow_name'];
+                                  $ow_email     = $row['ow_email'];
+                                  $ow_phone     = $row['ow_phone'];
+                                  $district     = $row['district'];
+                                  $division_id  = $row['division_id'];
+                                  $location     = $row['location'];
+                                  $price        = $row['price'];
+                                  $bed          = $row['bed'];
+                                  $kitchen      = $row['kitchen'];
+                                  $washroom     = $row['washroom'];
+                                  $totalroom    = $row['totalroom'];
+                                  $area_size    = $row['area_size'];
+                                  $floor        = $row['floor'];
+                                  $rank         = $row['rank'];
+                                  $decoration   = $row['decoration'];
+                                  $desk         = $row['desk'];
+                                  $wifi         = $row['wifi'];
+                                  $hottub       = $row['hottub'];
+                                  $currency     = $row['currency'];
+                                  $ac           = $row['ac'];
+                                  $pool         = $row['pool'];
+                                  $park         = $row['park'];
+                                  $gym          = $row['gym'];
+                                  $luggage      = $row['luggage'];
+                                  $drwaing      = $row['drwaing'];
+                                  $dinning      = $row['dinning'];
+                                  $balcony      = $row['balcony'];
+                                  $garage       = $row['garage'];
+                                  $breakfast    = $row['breakfast'];
+                                  $restourant    = $row['restourant'];
+                                  $availability    = $row['availability'];
+                                  $short_desc   = $row['short_desc'];
+                                  $long_desc    = $row['long_desc'];
+                                  $ow_image     = $row['ow_image'];
+                                  $img_one      = $row['img_one'];
+                                  $img_two      = $row['img_two'];
+                                  $img_three    = $row['img_three'];
+                                  $img_four     = $row['img_four'];
+                                  $img_five     = $row['img_five'];
+                                  $img_six      = $row['img_six'];
+                                  $status       = $row['status'];
+                                  $google_map   = $row['google_map'];
+                                  $join_date    = $row['join_date'];
 
-                      // For Image Three
-                      $img_three    = mysqli_real_escape_string($db, $_FILES['img_three']['name']);
-                      $tmpImgThree  = $_FILES['img_three']['tmp_name'];
+                                  echo $is_parent;
+                                }
+                                // End: Rent Sub Category
 
-                      if (!empty($img_three)) {
-                        $img3 = rand(0, 999999) . "_" . $img_three;
-                        move_uploaded_file($tmpImgThree, 'admin/assets/images/subcategory/' . $img3);
-                      } else {
-                        $img3 = '';
-                      }
+                                // Start Condition
+                                // if ( $pacid == 1 ) {
+                                //     if ( $rent_flat >= 1 ) {
+                                //         // code...
+                                //     }
+                                // }
+                                // else if( $pacid == 2 ) {
+                                //     echo "$name";
+                                // }
+                                // else if( $pacid == 3 ) {
+                                //     echo "$name";
+                                // }
+                                // End Condition
 
-                      // For Image Four
-                      $img_four   = mysqli_real_escape_string($db, $_FILES['img_four']['name']);
-                      $tmpImgFour   = $_FILES['img_four']['tmp_name'];
+                             
 
-                      if ($img_four) {
-                        $img4 = rand(0, 999999) . "_" . $img_four;
-                        move_uploaded_file($tmpImgFour, 'admin/assets/images/subcategory/' . $img4);
-                      } else {
-                        $img4 = '';
-                      }
-
-                      // For Image Five
-                      $img_five     = mysqli_real_escape_string($db, $_FILES['img_five']['name']);
-                      $tmpImgFive   = $_FILES['img_five']['tmp_name'];
-
-                      if (!empty($img_five)) {
-                        $img5 = rand(0, 999999) . "_" . $img_five;
-                        move_uploaded_file($tmpImgFive, 'admin/assets/images/subcategory/' . $img5);
-                      } else {
-                        $img5 = '';
-                      }
-
-                      // For Image Six
-                      $img_six    = mysqli_real_escape_string($db, $_FILES['img_six']['name']);
-                      $tmpImgSix    = $_FILES['img_six']['tmp_name'];
-
-                      if (!empty($img_six)) {
-                        $img6 = rand(0, 999999) . "_" . $img_six;
-                        move_uploaded_file($tmpImgSix, 'admin/assets/images/subcategory/' . $img6);
-                      } else {
-                        $img6 = '';
-                      }
-
-
-                      // Start: For Slug Making
-                      function createSlug($subname)
-                      {
-                        // Convert to Lower case
-                        $slug = strtolower($subname);
-
-                        // Remove Special Character
-                        $slug = preg_replace('/[^a-z0-9\s-]/', '', $slug);
-
-                        // Replace multiple spaces or hyphens with a single hyphen
-                        $slug = preg_replace('/[\s-]+/', ' ', $slug);
-
-                        // Replace spaces with hyphens
-                        $slug = preg_replace('/\s/', '-', $slug);
-
-                        // Trim leading and trailing hyphens
-                        $slug = trim($slug, '-');
-
-                        return $slug;
-                      }
-                      $slug = createSlug($subname);
-                      // End: For Slug Making
-
-                      $addSubCategorySql = "INSERT INTO rent_subcategory ( subcat_name, slug, is_parent, ow_name, ow_email, ow_phone, district, division_id, location, price, bed, kitchen, washroom, totalroom, area_size, floor, rank, decoration, desk, wifi, hottub, currency, breakfast, restourant, ac, pool, park, gym, luggage, drwaing, dinning, balcony, garage, availability, short_desc, long_desc, ow_image, img_one, img_two, img_three, img_four, img_five, img_six, status, google_map, join_date ) VALUES ( '$subname', '$slug', '$is_parent', '$ow_name', '$ow_email', '$ow_phone', '$district', '$division', '$location', '$price', '$bed', '$kitchen', '$washroom', '$totalRoom', '$areaSize', '$floor', '$rank', '$decoration', '$desk', '$wifi', '$hottub', '$currency', '$breakfast', '$restourant', '$ac', '$pool', '$park', '$gym', '$luggage', '$drawing', '$dinning', '$balcony', '$garage', '$availabe', '$sdesc', '$ldesc', '$imgOwn', '$img1', '$img2', '$img3', '$img4', '$img5', '$img6', '$status', '$map', now() )";
-                      $addQuery = mysqli_query($db, $addSubCategorySql);
-
-                      if ($addQuery) {
-                        header("Location: sellerDashboard.php?do=allRentProducts");
-                      } else {
-                        die("Mysql Error." . mysqli_error($db));
-                      }
+                            }
+                        }
+                        // END: Code for actual check the condition of package limit
+                      
                     }
                   } 
 
